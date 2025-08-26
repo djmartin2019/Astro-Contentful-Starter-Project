@@ -1,6 +1,6 @@
 # Setup Guide
 
-Quick setup for your Astro + Contentful starter template.
+Quick setup for your Astro + Contentful starter template, optimized for Cloudflare Pages.
 
 ## 🚀 Quick Start
 
@@ -18,11 +18,16 @@ Quick setup for your Astro + Contentful starter template.
    ```
 
 3. **Start development**
+
    ```bash
    npm run dev
    ```
 
+Visit `http://localhost:4321` to see your site!
+
 ## 🔧 Contentful Setup (Optional)
+
+The template works without Contentful, but to use the full content management features:
 
 ### 1. Create Contentful Space
 
@@ -61,9 +66,31 @@ Create these content types in your space:
 
 ```env
 CONTENTFUL_SPACE_ID=your_space_id
-CONTENTFUL_ACCESS_TOKEN=your_access_token
+CONTENTFUL_DELIVERY_TOKEN=your_delivery_token
 CONTENTFUL_ENVIRONMENT=master
 ```
+
+## ☁️ Cloudflare Pages Deployment
+
+This template is specifically designed for Cloudflare Pages:
+
+### Key Features
+
+- **No Node.js SDK** - Uses native `fetch()` API instead of Contentful's Node SDK
+- **Build-time Fetching** - All content is fetched during the build process
+- **Static Output** - Generates static HTML files for optimal performance
+- **CDN Images** - Images are served directly from Contentful's CDN
+
+### Deployment Steps
+
+1. **Connect your repository** to Cloudflare Pages
+2. **Set build settings**:
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+3. **Add environment variables** in Cloudflare Pages dashboard:
+   - `CONTENTFUL_SPACE_ID`
+   - `CONTENTFUL_DELIVERY_TOKEN`
+   - `CONTENTFUL_ENVIRONMENT`
 
 ## 🎯 Current Status
 
@@ -74,6 +101,8 @@ CONTENTFUL_ENVIRONMENT=master
 - Basic site structure
 - Responsive design
 - TypeScript support
+- SEO components
+- Static page generation
 
 ⚠️ **Requires Contentful Setup**
 
@@ -85,7 +114,7 @@ CONTENTFUL_ENVIRONMENT=master
 
 1. **Add content** to your Contentful space
 2. **Customize** the design and layout
-3. **Deploy** to your preferred hosting platform
+3. **Deploy** to Cloudflare Pages
 
 ## 🆘 Troubleshooting
 
@@ -105,4 +134,12 @@ CONTENTFUL_ENVIRONMENT=master
 
 ---
 
-**Happy building! 🚀**
+## 💡 Why This Approach?
+
+This template uses a **Cloudflare-first approach**:
+
+1. **No Node.js dependencies** - Everything works in Cloudflare's edge environment
+2. **Build-time content fetching** - Content is fetched once during build, not on every request
+3. **Static site generation** - Perfect for Cloudflare Pages' static hosting
+4. **Native web APIs** - Uses `fetch()` instead of external SDKs
+5. **Optimal performance** - No runtime API calls, just static HTML with CDN images

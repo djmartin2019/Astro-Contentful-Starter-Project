@@ -5,11 +5,9 @@ import tailwind from "@astrojs/tailwind";
 export default defineConfig({
   integrations: [tailwind()],
   // Enable TypeScript checking
-  typescript: {
-    strict: true,
+  vite: {
+    ssr: {
+      noExternal: ["contentful"],
+    },
   },
-  // Build output directory
-  outDir: "./dist",
-  // Site configuration
-  site: process.env.SITE_URL || "https://example.com",
 });

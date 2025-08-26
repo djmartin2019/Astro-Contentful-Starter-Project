@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import { getBlogPosts } from '../../lib/contentful';
 import { formatDate, getAssetUrl } from '../../lib/contentful';
+import type { BlogPost } from '../../types/contentful';
 
 // Get URL parameters for pagination and filtering
 const url = new URL(Astro.request.url);

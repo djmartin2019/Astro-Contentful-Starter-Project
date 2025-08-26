@@ -1,159 +1,41 @@
 ---
 import Base from '../layouts/Base.astro';
-import { getPages, getPageBySlug } from '../lib/contentful';
+import { getPages } from '../lib/contentful';
+import type { Page } from '../types/contentful';
 
 export async function getStaticPaths() {
   try {
     const pagesResponse = await getPages({ limit: 1000 });
-    return pagesResponse.items.map((page: any) => ({
+    return pagesResponse.items.map((page: Page) => ({
       params: { slug: page.fields.slug },
       props: { page },
     }));
   } catch (error) {
-    console.error('Error generating static paths:', error);
+    console.error('Error generating static paths for pages:', error);
     return [];
   }
 }
 
 export interface Props {
-  page: any;
+  page: Page;
 }
 
 const { page } = Astro.props;
-
-// Generate SEO metadata
-const seoTitle = page.fields.seoTitle || page.fields.title;
-const seoDescription = page.fields.seoDescription || `Read about ${page.fields.title}`;
 ---
 
-<Base 
-  title={seoTitle}
-  description={seoDescription}
->
-  <article class="bg-white">
-    <!-- Page Header -->
-    <section class="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-16">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">
-          {page.fields.title}
-        </h1>
-      </div>
-    </section>
-
-    <!-- Page Content -->
-    <section class="py-16">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="prose prose-lg prose-primary max-w-none">
-          <!-- Rich Text Content -->
-          {page.fields.content && (
-            <div class="rich-text-content">
-              <!-- This is where you would render the rich text content -->
-              <!-- For now, we'll show a placeholder -->
-              <div class="bg-gray-50 border-l-4 border-primary-500 p-4 mb-8">
-                <p class="text-gray-700">
-                  <strong>Note:</strong> This is a placeholder for the rich text content. 
-                  In a real implementation, you would render the Contentful Rich Text field here 
-                  using a library like <code>@contentful/rich-text-react-renderer</code> or similar.
-                </p>
-                <p class="text-gray-600 mt-2">
-                  The content would include headings, paragraphs, lists, links, and other rich text elements.
-                </p>
-              </div>
-              
-              <!-- Sample content structure -->
-              <h2>Sample Page Content</h2>
-              <p>
-                This page demonstrates how to create dynamic pages using Contentful's content models. 
-                You can create any type of page content and it will be automatically generated.
-              </p>
-              
-              <h3>Common Page Types</h3>
-              <ul>
-                <li>About pages</li>
-                <li>Contact pages</li>
-                <li>Service pages</li>
-                <li>Landing pages</li>
-                <li>Information pages</li>
-              </ul>
-              
-              <h3>Content Management</h3>
-              <p>
-                Content editors can easily update page content through the Contentful interface without 
-                needing to touch code. This makes it simple to maintain and update your website content.
-              </p>
-              
-              <blockquote>
-                <p>
-                  "Contentful's flexible content modeling allows you to create any type of page structure 
-                  while maintaining consistency across your website."
-                </p>
-              </blockquote>
-              
-              <h3>Customization</h3>
-              <p>
-                You can extend this template to include additional fields like:
-              </p>
-              <ul>
-                <li>Hero images</li>
-                <li>Call-to-action sections</li>
-                <li>Form integrations</li>
-                <li>Custom layouts</li>
-                <li>SEO enhancements</li>
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-
-    <!-- Back to Home -->
-    <section class="py-16 bg-gray-50">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <a 
-          href="/"
-          class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
-        >
-          <svg class="mr-2 -ml-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-          Back to Home
-        </a>
-      </div>
-    </section>
-  </article>
+<Base title={page.fields.title}>
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    <h1 class="text-4xl font-bold text-gray-900 mb-8">
+      {page.fields.title}
+    </h1>
+    
+    <div class="prose prose-lg max-w-none">
+      <!-- Content will be rendered here when you add a rich text renderer -->
+      <p class="text-gray-600">
+        This is a placeholder for the page content. 
+        Add a rich text renderer to display Contentful's rich text content.
+      </p>
+    </div>
+  </div>
 </Base>
 
-<style>
-  /* Custom styles for the page content */
-  .rich-text-content h2 {
-    @apply text-2xl font-bold text-gray-900 mt-8 mb-4;
-  }
-  
-  .rich-text-content h3 {
-    @apply text-xl font-semibold text-gray-900 mt-6 mb-3;
-  }
-  
-  .rich-text-content p {
-    @apply text-gray-700 mb-4 leading-relaxed;
-  }
-  
-  .rich-text-content ul, .rich-text-content ol {
-    @apply mb-4 pl-6;
-  }
-  
-  .rich-text-content li {
-    @apply text-gray-700 mb-2;
-  }
-  
-  .rich-text-content blockquote {
-    @apply border-l-4 border-primary-500 pl-4 py-2 my-6 bg-primary-50;
-  }
-  
-  .rich-text-content blockquote p {
-    @apply text-gray-700 italic mb-0;
-  }
-  
-  .rich-text-content code {
-    @apply bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-mono;
-  }
-</style>
