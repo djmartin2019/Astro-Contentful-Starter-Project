@@ -1,0 +1,206 @@
+---
+import Base from '../layouts/Base.astro';
+import { getRecentBlogPosts } from '../lib/contentful';
+import { formatDate, getAssetUrl } from '../lib/contentful';
+
+// Fetch recent blog posts for the homepage
+let recentPosts: any[] = [];
+try {
+  const postsResponse = await getRecentBlogPosts(3);
+  recentPosts = postsResponse.items;
+} catch (error) {
+  console.error('Error fetching recent posts:', error);
+  // Continue without posts if there's an error
+}
+---
+
+<Base 
+  title="Welcome to Your Astro + Contentful Website"
+  description="A modern, fast website built with Astro and powered by Contentful CMS. Discover our latest content and learn how we can help you."
+>
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6">
+        Welcome to Your
+        <span class="block text-primary-200">Content-Driven Website</span>
+      </h1>
+      <p class="text-xl md:text-2xl text-primary-100 mb-8 max-w-3xl mx-auto">
+        Built with Astro for speed and Contentful for flexibility. 
+        Create, manage, and deliver content that engages your audience.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a 
+          href="/blog" 
+          class="bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+        >
+          Read Our Blog
+        </a>
+        <a 
+          href="/about" 
+          class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors"
+        >
+          Learn More
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          Why Choose This Stack?
+        </h2>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+          Our technology choices deliver the best performance, developer experience, and content management capabilities.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center">
+          <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Lightning Fast</h3>
+          <p class="text-gray-600">
+            Astro delivers exceptional performance with zero JavaScript by default and smart partial hydration.
+          </p>
+        </div>
+        
+        <div class="text-center">
+          <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Content First</h3>
+          <p class="text-gray-600">
+            Contentful provides a powerful headless CMS with rich content modeling and API-first architecture.
+          </p>
+        </div>
+        
+        <div class="text-center">
+          <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Developer Experience</h3>
+          <p class="text-gray-600">
+            TypeScript support, modern tooling, and excellent documentation make development a joy.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Posts Section -->
+  {recentPosts.length > 0 && (
+    <section class="py-20 bg-gray-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Latest from Our Blog
+          </h2>
+          <p class="text-xl text-gray-600">
+            Stay updated with our latest thoughts, tutorials, and insights.
+          </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {recentPosts.map((post) => (
+            <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              {post.fields.featuredImage && (
+                <div class="aspect-w-16 aspect-h-9">
+                  <img
+                    src={getAssetUrl(post.fields.featuredImage, 400, 225)}
+                    alt={post.fields.featuredImage.fields.title || post.fields.title}
+                    class="w-full h-48 object-cover"
+                  />
+                </div>
+              )}
+              <div class="p-6">
+                <div class="flex items-center text-sm text-gray-500 mb-2">
+                  <time datetime={post.fields.publishDate}>
+                    {formatDate(post.fields.publishDate)}
+                  </time>
+                  {post.fields.author && (
+                    <>
+                      <span class="mx-2">•</span>
+                      <span>{post.fields.author}</span>
+                    </>
+                  )}
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                  <a href={`/blog/${post.fields.slug}`} class="hover:text-primary-600 transition-colors">
+                    {post.fields.title}
+                  </a>
+                </h3>
+                {post.fields.excerpt && (
+                  <p class="text-gray-600 mb-4 line-clamp-3">
+                    {post.fields.excerpt}
+                  </p>
+                )}
+                <div class="flex items-center justify-between">
+                  <a 
+                    href={`/blog/${post.fields.slug}`}
+                    class="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                  >
+                    Read more →
+                  </a>
+                  {post.fields.tags && post.fields.tags.length > 0 && (
+                    <div class="flex gap-2">
+                      {post.fields.tags.slice(0, 2).map((tag: string) => (
+                        <span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+        
+        <div class="text-center mt-12">
+          <a 
+            href="/blog"
+            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+          >
+            View All Posts
+            <svg class="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA Section -->
+  <section class="py-20 bg-primary-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">
+        Ready to Get Started?
+      </h2>
+      <p class="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
+        This starter template provides everything you need to build your next content-driven website. 
+        Customize it to match your brand and requirements.
+      </p>
+      <a 
+        href="https://github.com/djmartin2019/astro-contentful-starter-project.git"
+        class="inline-flex items-center px-8 py-3 bg-white text-primary-600 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+      >
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+        </svg>
+        Get the Template
+      </a>
+    </div>
+  </section>
+</Base>

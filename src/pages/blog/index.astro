@@ -1,0 +1,238 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getBlogPosts } from '../../lib/contentful';
+import { formatDate, getAssetUrl } from '../../lib/contentful';
+
+// Get URL parameters for pagination and filtering
+const url = new URL(Astro.request.url);
+const page = parseInt(url.searchParams.get('page') || '1');
+const tag = url.searchParams.get('tag') || '';
+const limit = 9;
+const skip = (page - 1) * limit;
+
+// Fetch blog posts with optional tag filtering
+let postsResponse;
+let totalPosts = 0;
+let posts: any[] = [];
+
+try {
+  const queryParams: any = {
+    limit,
+    skip,
+  };
+  
+  if (tag) {
+    queryParams['fields.tags[in]'] = tag;
+  }
+  
+  postsResponse = await getBlogPosts(queryParams);
+  totalPosts = postsResponse.total;
+  posts = postsResponse.items;
+} catch (error) {
+  console.error('Error fetching blog posts:', error);
+  // Continue without posts if there's an error
+}
+
+// Calculate pagination
+const totalPages = Math.ceil(totalPosts / limit);
+const hasNextPage = page < totalPages;
+const hasPrevPage = page > 1;
+
+// Get all unique tags for filtering
+let allTags: string[] = [];
+try {
+  const allPostsResponse = await getBlogPosts({ limit: 1000 });
+  const allTagsSet = new Set<string>();
+  allPostsResponse.items.forEach((post: any) => {
+    if (post.fields.tags) {
+      post.fields.tags.forEach((tag: string) => allTagsSet.add(tag));
+    }
+  });
+  allTags = Array.from(allTagsSet).sort();
+} catch (error) {
+  console.error('Error fetching tags:', error);
+}
+---
+
+<Base 
+  title="Blog - Your Company"
+  description="Read our latest articles, tutorials, and insights on web development, content management, and more."
+>
+  <!-- Header -->
+  <section class="bg-white border-b border-gray-200 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">Our Blog</h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+          Insights, tutorials, and thoughts on building modern, content-driven websites.
+        </p>
+      </div>
+      
+      <!-- Tag Filtering -->
+      {allTags.length > 0 && (
+        <div class="mt-8">
+          <div class="flex flex-wrap justify-center gap-2">
+            <a
+              href="/blog"
+              class={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                !tag 
+                  ? 'bg-primary-600 text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              All Posts
+            </a>
+            {allTags.map((tagName: string) => (
+              <a
+                href={`/blog?tag=${encodeURIComponent(tagName)}`}
+                class={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  tag === tagName
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {tagName}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Blog Posts Grid -->
+  <section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {posts.length > 0 ? (
+        <>
+          <!-- Results count -->
+          <div class="mb-8">
+            <p class="text-gray-600">
+              {tag ? `Showing posts tagged with "${tag}"` : 'Showing all posts'} 
+              ({totalPosts} total)
+            </p>
+          </div>
+          
+          <!-- Posts Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.map((post) => (
+              <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                {post.fields.featuredImage && (
+                  <div class="aspect-w-16 aspect-h-9">
+                    <img
+                      src={getAssetUrl(post.fields.featuredImage, 400, 225)}
+                      alt={post.fields.featuredImage.fields.title || post.fields.title}
+                      class="w-full h-48 object-cover"
+                    />
+                  </div>
+                )}
+                <div class="p-6">
+                  <div class="flex items-center text-sm text-gray-500 mb-2">
+                    <time datetime={post.fields.publishDate}>
+                      {formatDate(post.fields.publishDate)}
+                    </time>
+                    {post.fields.author && (
+                      <>
+                        <span class="mx-2">•</span>
+                        <span>{post.fields.author}</span>
+                      </>
+                    )}
+                  </div>
+                  <h2 class="text-xl font-semibold text-gray-900 mb-2">
+                    <a href={`/blog/${post.fields.slug}`} class="hover:text-primary-600 transition-colors">
+                      {post.fields.title}
+                    </a>
+                  </h2>
+                  {post.fields.excerpt && (
+                    <p class="text-gray-600 mb-4 line-clamp-3">
+                      {post.fields.excerpt}
+                    </p>
+                  )}
+                  <div class="flex items-center justify-between">
+                    <a 
+                      href={`/blog/${post.fields.slug}`}
+                      class="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                    >
+                      Read more →
+                    </a>
+                    {post.fields.tags && post.fields.tags.length > 0 && (
+                      <div class="flex gap-2">
+                        {post.fields.tags.slice(0, 2).map((tagName: string) => (
+                          <span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
+                            {tagName}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          
+          <!-- Pagination -->
+          {totalPages > 1 && (
+            <div class="mt-16 flex justify-center">
+              <nav class="flex items-center space-x-2">
+                {hasPrevPage && (
+                  <a
+                    href={`/blog?page=${page - 1}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`}
+                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Previous
+                  </a>
+                )}
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                  <a
+                    href={`/blog?page=${pageNum}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`}
+                    class={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                      pageNum === page
+                        ? 'bg-primary-600 text-white'
+                        : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {pageNum}
+                  </a>
+                ))}
+                
+                {hasNextPage && (
+                  <a
+                    href={`/blog?page=${page + 1}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`}
+                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Next
+                  </a>
+                )}
+              </nav>
+            </div>
+          )}
+        </>
+      ) : (
+        <!-- No posts found -->
+        <div class="text-center py-16">
+          <div class="mx-auto w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No posts found</h3>
+          <p class="text-gray-600 mb-6">
+            {tag 
+              ? `No posts found with the tag "${tag}".` 
+              : 'No blog posts available at the moment.'
+            }
+          </p>
+          {tag && (
+            <a 
+              href="/blog"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
+            >
+              View All Posts
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,43 @@
+{
+  "name": "astro-contentful-starter",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "A lean starter template for Astro projects with Contentful CMS integration, TypeScript, and Tailwind CSS",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "type-check": "astro check",
+    "lint": "eslint . --ext .js,.ts,.astro",
+    "lint:fix": "eslint . --ext .js,.ts,.astro --fix"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^5.0.0",
+    "@astrojs/ts-plugin": "^0.4.0",
+    "astro": "^4.0.0",
+    "contentful": "^10.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "eslint-plugin-astro": "^0.29.0",
+    "tailwindcss": "^3.3.0",
+    "@tailwindcss/typography": "^0.5.10",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "astro",
+    "contentful",
+    "cms",
+    "typescript",
+    "tailwind",
+    "starter",
+    "template"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
