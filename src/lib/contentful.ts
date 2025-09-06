@@ -91,75 +91,157 @@ async function cfQuery(query: any): Promise<any> {
         "Content-Type": "application/json",
       },
     });
-
-    if (!response.ok) {
+    if (!response.ok)
       throw new Error(
         `Contentful API error: ${response.status} ${response.statusText}`
       );
-    }
 
-    return await response.json();
+    const json = await response.json();
+
+    // 🧹 sanitize: keep only Entries that have fields
+    const items = Array.isArray(json.items)
+      ? json.items.filter((it: any) => it?.sys?.type === "Entry" && it?.fields)
+      : [];
+
+    return {
+      ...json,
+      items, // cleaned items
+      includes: json.includes || {}, // always an object
+    };
   } catch (error) {
     console.error("Error fetching from Contentful:", error);
-    return { items: [], total: 0, skip: 0, limit: 0 };
+    return { items: [], total: 0, skip: 0, limit: 0, includes: {} };
   }
 }
 
-// Fetch all blog posts
+export function resolveAsset(link: any, includes: any) {
+  if (!link || link.sys?.type === "Asset") return link; // already resolved
+  if (link?.sys?.linkType !== "Asset") return null;
+  const id = link.sys.id;
+  return includes?.Asset?.find((a: any) => a?.sys?.id === id) ?? null;
+}
+
+// Fetch a specific asset by ID using direct API call
+export async function getAsset(assetId: string) {
+  try {
+    const response = await fetch(
+      `https://cdn.contentful.com/spaces/${CONTENTFUL_SPACE_ID}/environments/${CONTENTFUL_ENVIRONMENT}/assets/${assetId}?access_token=${CONTENTFUL_ACCESS_TOKEN}`
+    );
+    if (!response.ok) {
+      console.error(
+        "Asset fetch failed:",
+        response.status,
+        response.statusText
+      );
+      return null;
+    }
+    const data = await response.json();
+    console.log("Asset data:", data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching asset:", error);
+    return null;
+  }
+}
+
+// Create a simple asset object from asset ID
+export function createAssetFromId(assetId: string) {
+  return {
+    sys: {
+      id: assetId,
+      type: "Asset",
+    },
+    fields: {
+      title: `${assetId} Image`,
+      file: {
+        url: `//images.ctfassets.net/${CONTENTFUL_SPACE_ID}/${assetId}/placeholder.jpg`,
+        details: {
+          size: 0,
+          image: {
+            width: 1200,
+            height: 600,
+          },
+        },
+        fileName: `${assetId}.jpg`,
+        contentType: "image/jpeg",
+      },
+    },
+  };
+}
+
+// Create a simple image URL from asset ID
+export function createImageUrl(
+  assetId: string,
+  width?: number,
+  height?: number
+) {
+  let url = `https://images.ctfassets.net/${CONTENTFUL_SPACE_ID}/${assetId}/placeholder.jpg`;
+
+  if (width || height) {
+    url += "?";
+    const params = new URLSearchParams();
+    if (width) params.append("w", width.toString());
+    if (height) params.append("h", height.toString());
+    if (width || height) params.append("fit", "thumb");
+    url += params.toString();
+  }
+
+  return url;
+}
+
+// getBlogPosts
 export async function getBlogPosts(params: QueryParams = {}) {
   const query: any = {
     content_type: "blogPost",
     order: params.order || ["-fields.publishDate"],
     limit: params.limit || 100,
     skip: params.skip || 0,
+    include: 10, // Increased to include all referenced assets
   };
-
-  if (params["fields.tags[in]"]) {
+  if (params["fields.tags[in]"])
     query["fields.tags[in]"] = params["fields.tags[in]"];
-  }
-
   return cfQuery(query);
 }
 
-// Fetch a single blog post by slug
+// getBlogPostBySlug
 export async function getBlogPostBySlug(slug: string) {
   const response = await cfQuery({
     content_type: "blogPost",
     "fields.slug": slug,
     limit: 1,
+    include: 1,
   });
-
-  return response.items[0] || null;
+  return response.items?.[0] ?? null;
 }
 
-// Fetch recent blog posts
+// getRecentBlogPosts
 export async function getRecentBlogPosts(limit = 5) {
   return cfQuery({
     content_type: "blogPost",
     order: ["-fields.publishDate"],
     limit,
+    include: 1,
   });
 }
 
-// Fetch all pages
 export async function getPages(params: QueryParams = {}) {
   return cfQuery({
     content_type: "page",
     order: params.order || ["fields.title"],
     limit: params.limit || 100,
     skip: params.skip || 0,
+    include: 1, // consistency
   });
 }
 
-// Fetch a single page by slug
 export async function getPageBySlug(slug: string) {
   const response = await cfQuery({
     content_type: "page",
     "fields.slug": slug,
     limit: 1,
+    include: 1,
   });
-
-  return response.items[0] || null;
+  return response.items?.[0] ?? null;
 }
 
 // Utility functions

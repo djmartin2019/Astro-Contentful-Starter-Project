@@ -23,56 +23,56 @@ const canonicalUrl = canonical || Astro.url.href;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={metaDescription} />
-    
+
     <!-- Canonical URL -->
     <link rel="canonical" href={canonicalUrl} />
-    
+
     <!-- Robots meta -->
     {noindex && <meta name="robots" content="noindex, nofollow" />}
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={metaDescription} />
     <meta property="og:image" content={new URL(metaImage, Astro.url)} />
-    
+
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={canonicalUrl} />
     <meta property="twitter:title" content={title} />
     <meta property="twitter:description" content={metaDescription} />
     <meta property="twitter:image" content={new URL(metaImage, Astro.url)} />
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    
+
     <title>{title}</title>
   </head>
   <body class="h-full bg-gray-50 text-gray-900 antialiased">
     <div class="min-h-full flex flex-col">
       <!-- Navigation -->
       <Nav />
-      
+
       <!-- Main content -->
       <main class="flex-1">
         <slot />
       </main>
-      
+
       <!-- Footer -->
-      <footer class="bg-gray-900 text-white py-12 mt-16">
+      <footer class="bg-gray-900 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 class="text-lg font-semibold mb-4">About</h3>
               <p class="text-gray-300">
-                A modern website built with Astro and Contentful CMS. 
+                A modern website built with Astro and Contentful CMS.
                 Fast, flexible, and content-driven.
               </p>
             </div>
@@ -107,16 +107,16 @@ const canonicalUrl = canonical || Astro.url.href;
   ::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   ::-webkit-scrollbar-track {
     background: #f1f5f9;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 4px;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
   }

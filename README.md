@@ -44,15 +44,47 @@ A lean starter template for building fast, content-driven websites with Astro an
 ## 🔧 Contentful Setup
 
 1. **Create a Contentful space**
-2. **Add content types**:
+2. **Add content types** (or use the automated setup):
    - `blogPost` - Title, slug, content, featured image, author, publish date, tags
    - `page` - Title, slug, content
 3. **Add your API keys** to `.env`:
+
    ```env
    CONTENTFUL_SPACE_ID=your_space_id
    CONTENTFUL_DELIVERY_TOKEN=your_delivery_token
+   CONTENTFUL_MANAGEMENT_TOKEN=your_management_token
    CONTENTFUL_ENVIRONMENT=master
    ```
+
+4. **Set up content types and seed data** (optional):
+
+   ```bash
+   # Set up content types
+   npm run contentful:setup
+
+   # Add sample blog posts about Astro and Contentful
+   npm run contentful:seed
+
+   # Or run both at once
+   npm run contentful:init
+   ```
+
+## 📝 Sample Content
+
+The seed script creates 5 comprehensive blog posts about Astro and Contentful:
+
+1. **Getting Started with Astro** - Introduction to Astro's islands architecture
+2. **Contentful CMS Guide** - Complete guide to headless content management
+3. **Astro + Contentful Integration** - Building lightning-fast sites
+4. **Headless CMS Benefits** - Why headless is the future
+5. **Cloudflare Pages Deployment** - Step-by-step deployment guide
+
+Each post includes:
+
+- Realistic content with code examples
+- Proper metadata (author, publish date, tags)
+- Featured images from Unsplash
+- SEO-optimized excerpts
 
 ## ☁️ Cloudflare Pages Deployment
 

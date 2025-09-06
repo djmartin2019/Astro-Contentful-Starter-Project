@@ -1,61 +1,63 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { getBlogPosts } from '../../lib/contentful';
-import { formatDate, getAssetUrl } from '../../lib/contentful';
-import type { BlogPost } from '../../types/contentful';
+import { getBlogPosts, formatDate, getAssetUrl, resolveAsset } from '../../lib/contentful';
 
-// Get URL parameters for pagination and filtering
 const url = new URL(Astro.request.url);
 const page = parseInt(url.searchParams.get('page') || '1');
-const tag = url.searchParams.get('tag') || '';
+const tagParam = url.searchParams.get('tag') || '';
+const tags = tagParam ? tagParam.split(',').map(t => t.trim()).filter(t => t) : [];
 const limit = 9;
 const skip = (page - 1) * limit;
 
-// Fetch blog posts with optional tag filtering
-let postsResponse;
-let totalPosts = 0;
-let posts: any[] = [];
-
+let postsResponse: any = { items: [], total: 0, includes: {} };
 try {
-  const queryParams: any = {
-    limit,
-    skip,
-  };
-  
-  if (tag) {
-    queryParams['fields.tags[in]'] = tag;
+  const q: any = { limit, skip };
+  if (tags.length > 0) {
+    // For multiple tags, we'll fetch all posts and filter client-side
+    // This is because Contentful's API doesn't support OR operations easily
+    q.limit = 1000; // Get all posts for client-side filtering
   }
-  
-  postsResponse = await getBlogPosts(queryParams);
-  totalPosts = postsResponse.total;
-  posts = postsResponse.items;
-} catch (error) {
-  console.error('Error fetching blog posts:', error);
-  // Continue without posts if there's an error
+  postsResponse = await getBlogPosts(q);
+} catch (e) {
+  console.error('Error fetching blog posts:', e);
 }
 
-// Calculate pagination
-const totalPages = Math.ceil(totalPosts / limit);
+const items: any[] = Array.isArray(postsResponse.items) ? postsResponse.items : [];
+const includes: any = postsResponse?.includes ?? {};
+
+// ✅ keep only real entries with title & slug
+const posts = items
+  .filter((it) => it?.sys?.type === 'Entry' && it?.fields && it.fields.title && it.fields.slug)
+  .map((it) => ({
+    ...it,
+    featuredResolved: resolveAsset(it.fields.featuredImage, includes) // may be null
+  }));
+
+// show what's being skipped, once
+const skipped = items.filter((it) => !(it?.sys?.type === 'Entry' && it?.fields?.title && it?.fields?.slug));
+if (skipped.length) {
+  console.warn('Skipped records (missing fields/title/slug):',
+    skipped.map((s) => ({ id: s?.sys?.id, type: s?.sys?.type, hasFields: !!s?.fields })));
+}
+
+const totalPosts: number = Number(postsResponse?.total ?? posts.length);
+const totalPages = Math.max(1, Math.ceil(totalPosts / limit));
 const hasNextPage = page < totalPages;
 const hasPrevPage = page > 1;
 
-// Get all unique tags for filtering
+// tags (guarded)
 let allTags: string[] = [];
 try {
-  const allPostsResponse = await getBlogPosts({ limit: 1000 });
-  const allTagsSet = new Set<string>();
-  allPostsResponse.items.forEach((post: any) => {
-    if (post.fields.tags) {
-      post.fields.tags.forEach((tag: string) => allTagsSet.add(tag));
-    }
-  });
-  allTags = Array.from(allTagsSet).sort();
-} catch (error) {
-  console.error('Error fetching tags:', error);
-}
+  const all = await getBlogPosts({ limit: 1000 });
+  const set = new Set<string>();
+  (all.items ?? []).forEach((p: any) => (p?.fields?.tags ?? []).forEach((t: string) => set.add(t)));
+  allTags = Array.from(set).sort();
+} catch (e) {
+  console.error('Error fetching tags:', e);
+  }
 ---
 
-<Base 
+<Base
   title="Blog - Your Company"
   description="Read our latest articles, tutorials, and insights on web development, content management, and more."
 >
@@ -68,32 +70,28 @@ try {
           Insights, tutorials, and thoughts on building modern, content-driven websites.
         </p>
       </div>
-      
+
       <!-- Tag Filtering -->
       {allTags.length > 0 && (
         <div class="mt-8">
-          <div class="flex flex-wrap justify-center gap-2">
-            <a
-              href="/blog"
-              class={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                !tag 
-                  ? 'bg-primary-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+          <div class="flex flex-wrap justify-center gap-2" id="tag-filter-container">
+            <button
+              type="button"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-colors bg-primary-600 text-white"
+              data-tag="all"
+              id="tag-all"
             >
               All Posts
-            </a>
-            {allTags.map((tagName: string) => (
-              <a
-                href={`/blog?tag=${encodeURIComponent(tagName)}`}
-                class={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  tag === tagName
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+            </button>
+            {allTags.map((tagName) => (
+              <button
+                type="button"
+                class="px-4 py-2 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                data-tag={tagName}
+                id={`tag-${tagName}`}
               >
                 {tagName}
-              </a>
+              </button>
             ))}
           </div>
         </div>
@@ -109,84 +107,92 @@ try {
           <!-- Results count -->
           <div class="mb-8">
             <p class="text-gray-600">
-              {tag ? `Showing posts tagged with "${tag}"` : 'Showing all posts'} 
+              {tags.length > 0 
+                ? `Showing posts tagged with "${tags.join('", "')}"` 
+                : 'Showing all posts'
+              }
               ({totalPosts} total)
             </p>
           </div>
-          
+
           <!-- Posts Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post) => (
-              <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                {post.fields.featuredImage && (
-                  <div class="aspect-w-16 aspect-h-9">
-                    <img
-                      src={getAssetUrl(post.fields.featuredImage, 400, 225)}
-                      alt={post.fields.featuredImage.fields.title || post.fields.title}
-                      class="w-full h-48 object-cover"
-                    />
-                  </div>
-                )}
-                <div class="p-6">
-                  <div class="flex items-center text-sm text-gray-500 mb-2">
-                    <time datetime={post.fields.publishDate}>
-                      {formatDate(post.fields.publishDate)}
-                    </time>
-                    {post.fields.author && (
-                      <>
-                        <span class="mx-2">•</span>
-                        <span>{post.fields.author}</span>
-                      </>
-                    )}
-                  </div>
-                  <h2 class="text-xl font-semibold text-gray-900 mb-2">
-                    <a href={`/blog/${post.fields.slug}`} class="hover:text-primary-600 transition-colors">
-                      {post.fields.title}
-                    </a>
-                  </h2>
-                  {post.fields.excerpt && (
-                    <p class="text-gray-600 mb-4 line-clamp-3">
-                      {post.fields.excerpt}
-                    </p>
-                  )}
-                  <div class="flex items-center justify-between">
-                    <a 
-                      href={`/blog/${post.fields.slug}`}
-                      class="text-primary-600 hover:text-primary-700 font-medium transition-colors"
-                    >
-                      Read more →
-                    </a>
-                    {post.fields.tags && post.fields.tags.length > 0 && (
-                      <div class="flex gap-2">
-                        {post.fields.tags.slice(0, 2).map((tagName: string) => (
-                          <span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
-                            {tagName}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </article>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="posts-grid">
+{posts.map((post) => (
+  <article 
+    class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 post-item"
+    data-tags={post?.fields?.tags?.join(',') || ''}
+  >
+    {post.featuredResolved && (
+      <div class="w-full h-48 overflow-hidden">
+        <img
+          src={getAssetUrl(post.featuredResolved, 800, 450)}
+          alt={post.featuredResolved?.fields?.title ?? post.fields.title}
+          class="w-full h-48 object-cover"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    )}
+    <div class="p-6">
+      <div class="flex items-center text-sm text-gray-500 mb-2">
+        <time datetime={post?.fields?.publishDate}>
+          {formatDate(post?.fields?.publishDate ?? new Date().toISOString())}
+        </time>
+        {post?.fields?.author && (
+          <>
+            <span class="mx-2">•</span>
+            <span>{post.fields.author}</span>
+          </>
+        )}
+      </div>
+      <h2 class="text-xl font-semibold text-gray-900 mb-2">
+        <a href={`/blog/${post?.fields?.slug}`} class="hover:text-primary-600 transition-colors">
+          {post?.fields?.title ?? '(Untitled)'}
+        </a>
+      </h2>
+      {post?.fields?.excerpt && (
+        <p class="text-gray-600 mb-4 line-clamp-3">
+          {post.fields.excerpt}
+        </p>
+      )}
+      <div class="flex items-center justify-between">
+        <a
+          href={`/blog/${post?.fields?.slug}`}
+          class="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+        >
+          Read more →
+        </a>
+        {!!(post?.fields?.tags?.length) && (
+          <div class="flex gap-2">
+            {post.fields.tags.slice(0, 2).map((tagName: string) => (
+              <span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
+                {tagName}
+              </span>
             ))}
           </div>
-          
+        )}
+      </div>
+    </div>
+  </article>
+))}
+          </div>
+
           <!-- Pagination -->
           {totalPages > 1 && (
             <div class="mt-16 flex justify-center">
               <nav class="flex items-center space-x-2">
                 {hasPrevPage && (
-                  <a
-                    href={`/blog?page=${page - 1}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`}
-                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    Previous
-                  </a>
+            <a
+              href={`/blog?page=${page - 1}${tags.length > 0 ? `&tag=${encodeURIComponent(tags.join(','))}` : ''}`}
+              class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              Previous
+            </a>
                 )}
-                
+
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
                   <a
-                    href={`/blog?page=${pageNum}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`}
+                    href={`/blog?page=${pageNum}${tags.length > 0 ? `&tag=${encodeURIComponent(tags.join(','))}` : ''}`}
                     class={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                       pageNum === page
                         ? 'bg-primary-600 text-white'
@@ -196,10 +202,10 @@ try {
                     {pageNum}
                   </a>
                 ))}
-                
+
                 {hasNextPage && (
                   <a
-                    href={`/blog?page=${page + 1}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`}
+                    href={`/blog?page=${page + 1}${tags.length > 0 ? `&tag=${encodeURIComponent(tags.join(','))}` : ''}`}
                     class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                   >
                     Next
@@ -210,7 +216,6 @@ try {
           )}
         </>
       ) : (
-        <!-- No posts found -->
         <div class="text-center py-16">
           <div class="mx-auto w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-6">
             <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,13 +224,13 @@ try {
           </div>
           <h3 class="text-lg font-medium text-gray-900 mb-2">No posts found</h3>
           <p class="text-gray-600 mb-6">
-            {tag 
-              ? `No posts found with the tag "${tag}".` 
+            {tags.length > 0
+              ? `No posts found with the tags "${tags.join('", "')}".`
               : 'No blog posts available at the moment.'
             }
           </p>
-          {tag && (
-            <a 
+          {tags.length > 0 && (
+            <a
               href="/blog"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 transition-colors"
             >
@@ -237,3 +242,147 @@ try {
     </div>
   </section>
 </Base>
+
+<script is:inline>
+  // Multi-tag filtering functionality
+  class TagFilter {
+    constructor() {
+      this.selectedTags = new Set();
+      this.allButton = document.getElementById('tag-all');
+      this.tagButtons = document.querySelectorAll('[data-tag]:not([data-tag="all"])');
+      this.postItems = document.querySelectorAll('.post-item');
+      this.resultsCount = document.querySelector('.text-gray-600');
+      
+      this.init();
+    }
+
+    init() {
+      // Add click event listeners
+      if (this.allButton) {
+        this.allButton.addEventListener('click', () => this.toggleAll());
+      }
+      this.tagButtons.forEach((button) => {
+        button.addEventListener('click', () => this.toggleTag(button.dataset.tag));
+      });
+
+      // Initialize with URL parameters if any
+      const urlParams = new URLSearchParams(window.location.search);
+      const tagParam = urlParams.get('tag');
+      if (tagParam) {
+        const tags = tagParam.split(',').map(t => t.trim()).filter(t => t);
+        tags.forEach(tag => this.toggleTag(tag));
+      }
+    }
+
+    toggleAll() {
+      this.selectedTags.clear();
+      this.updateButtonStates();
+      this.filterPosts();
+    }
+
+    toggleTag(tag) {
+      if (tag === 'all') {
+        this.toggleAll();
+        return;
+      }
+
+      if (this.selectedTags.has(tag)) {
+        this.selectedTags.delete(tag);
+      } else {
+        this.selectedTags.add(tag);
+      }
+
+      this.updateButtonStates();
+      this.filterPosts();
+    }
+
+    updateButtonStates() {
+      // Update "All Posts" button
+      if (this.selectedTags.size === 0) {
+        this.allButton.className = 'px-4 py-2 rounded-full text-sm font-medium transition-colors bg-primary-600 text-white';
+      } else {
+        this.allButton.className = 'px-4 py-2 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200';
+      }
+
+      // Update individual tag buttons
+      this.tagButtons.forEach((button) => {
+        const tag = button.dataset.tag;
+        if (this.selectedTags.has(tag)) {
+          button.className = 'px-4 py-2 rounded-full text-sm font-medium transition-colors bg-primary-600 text-white';
+        } else {
+          button.className = 'px-4 py-2 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200';
+        }
+      });
+    }
+
+    filterPosts() {
+      let visibleCount = 0;
+
+      this.postItems.forEach((post) => {
+        const postTags = post.dataset.tags.split(',').filter(tag => tag.trim() !== '');
+        
+        if (this.selectedTags.size === 0) {
+          // Show all posts
+          post.style.display = 'block';
+          post.style.opacity = '1';
+          post.style.transform = 'scale(1)';
+          visibleCount++;
+        } else {
+          // Check if post has any of the selected tags
+          const hasSelectedTag = Array.from(this.selectedTags).some(selectedTag => 
+            postTags.includes(selectedTag)
+          );
+          
+          if (hasSelectedTag) {
+            post.style.display = 'block';
+            post.style.opacity = '1';
+            post.style.transform = 'scale(1)';
+            visibleCount++;
+          } else {
+            // Fade out and scale down before hiding
+            post.style.opacity = '0';
+            post.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+              post.style.display = 'none';
+            }, 300);
+          }
+        }
+      });
+
+      // Update results count
+      if (this.resultsCount) {
+        if (this.selectedTags.size === 0) {
+          this.resultsCount.textContent = `Showing all posts (${visibleCount} total)`;
+        } else {
+          const selectedTagsArray = Array.from(this.selectedTags);
+          const tagsText = selectedTagsArray.length === 1 
+            ? `"${selectedTagsArray[0]}"` 
+            : `"${selectedTagsArray.join('", "')}"`;
+          this.resultsCount.textContent = `Showing posts tagged with ${tagsText} (${visibleCount} total)`;
+        }
+      }
+
+      // Update URL without page refresh
+      this.updateURL();
+    }
+
+    updateURL() {
+      const url = new URL(window.location.href);
+      
+      if (this.selectedTags.size === 0) {
+        url.searchParams.delete('tag');
+      } else {
+        const selectedTagsArray = Array.from(this.selectedTags);
+        url.searchParams.set('tag', selectedTagsArray.join(','));
+      }
+      
+      // Update URL without page refresh
+      window.history.replaceState({}, '', url.toString());
+    }
+  }
+
+  // Initialize tag filtering when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    new TagFilter();
+  });
+</script>

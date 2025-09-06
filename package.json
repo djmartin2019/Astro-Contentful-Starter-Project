@@ -10,7 +10,10 @@
     "preview": "astro preview",
     "type-check": "astro check",
     "lint": "eslint . --ext .js,.astro",
-    "lint:fix": "eslint . --ext .js,.astro --fix"
+    "lint:fix": "eslint . --ext .js,.astro --fix",
+    "contentful:setup": "node scripts/contentful-setup.mjs",
+    "contentful:seed": "node scripts/contentful-seed.mjs",
+    "contentful:init": "npm run contentful:setup && npm run contentful:seed"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
@@ -21,6 +24,8 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.10",
     "@types/node": "^20.0.0",
+    "contentful-management": "^11.54.4",
+    "dotenv": "^17.2.2",
     "eslint": "^8.0.0",
     "eslint-plugin-astro": "^0.29.0",
     "tailwindcss": "^3.3.0",
