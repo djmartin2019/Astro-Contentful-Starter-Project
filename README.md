@@ -1,5 +1,10 @@
 # Astro + Contentful Starter Repo
 
+[![Use this template](https://img.shields.io/badge/Use%20this%20template-2ea44f?logo=github)](https://github.com/djmartin2019/Astro-Contentful-Starter-Project/generate)
+[![Release](https://img.shields.io/github/v/release/djmartin2019/Astro-Contentful-Starter-Project)](https://github.com/djmartin2019/Astro-Contentful-Starter-Project/releases)
+[![Stars](https://img.shields.io/github/stars/djmartin2019/Astro-Contentful-Starter-Project?style=social)](https://github.com/djmartin2019/Astro-Contentful-Starter-Project/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A lean starter template for building fast, content-driven websites with Astro and Contentful CMS. **Optimized for Cloudflare Pages deployment.**
 
 ## ✨ Features
