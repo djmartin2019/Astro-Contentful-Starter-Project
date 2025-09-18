@@ -53,13 +53,16 @@ import Base from '../layouts/Base.astro';
         
         <div class="bg-gray-50 p-8 rounded-lg">
           <h2 class="text-2xl font-semibold text-gray-900 mb-4">Send us a Message</h2>
-          <form class="space-y-4">
+          <form id="contact-form" class="space-y-4">
+            <div id="form-message" class="hidden p-4 rounded-md mb-4"></div>
+            
             <div>
               <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
               <input
                 type="text"
                 id="name"
                 name="name"
+                required
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Your name"
               />
@@ -71,6 +74,7 @@ import Base from '../layouts/Base.astro';
                 type="email"
                 id="email"
                 name="email"
+                required
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="your@email.com"
               />
@@ -82,6 +86,7 @@ import Base from '../layouts/Base.astro';
                 id="message"
                 name="message"
                 rows="4"
+                required
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Your message..."
               ></textarea>
@@ -89,9 +94,11 @@ import Base from '../layouts/Base.astro';
             
             <button
               type="submit"
-              class="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors font-medium"
+              id="submit-btn"
+              class="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Send Message
+              <span id="submit-text">Send Message</span>
+              <span id="submit-loading" class="hidden">Sending...</span>
             </button>
           </form>
         </div>
@@ -99,3 +106,59 @@ import Base from '../layouts/Base.astro';
     </div>
   </section>
 </Base>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('contact-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const submitText = document.getElementById('submit-text');
+    const submitLoading = document.getElementById('submit-loading');
+    const formMessage = document.getElementById('form-message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Show loading state
+      submitBtn.disabled = true;
+      submitText.classList.add('hidden');
+      submitLoading.classList.remove('hidden');
+      formMessage.classList.add('hidden');
+
+      try {
+        const formData = new FormData(form);
+        
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Show success message
+          formMessage.textContent = result.message;
+          formMessage.className = 'p-4 rounded-md mb-4 bg-green-100 text-green-800 border border-green-200';
+          formMessage.classList.remove('hidden');
+          
+          // Reset form
+          form.reset();
+        } else {
+          // Show error message
+          formMessage.textContent = result.error || 'Something went wrong. Please try again.';
+          formMessage.className = 'p-4 rounded-md mb-4 bg-red-100 text-red-800 border border-red-200';
+          formMessage.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Form submission error:', error);
+        formMessage.textContent = 'Network error. Please check your connection and try again.';
+        formMessage.className = 'p-4 rounded-md mb-4 bg-red-100 text-red-800 border border-red-200';
+        formMessage.classList.remove('hidden');
+      } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitLoading.classList.add('hidden');
+      }
+    });
+  });
+</script>
