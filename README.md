@@ -51,6 +51,7 @@ A **production-ready** blog starter template built with Astro and Contentful CMS
 <div align="center">
   <img width="400" alt="Blog Page" src="https://github.com/user-attachments/assets/b9fa0c69-2c5e-453f-a8dd-7973dc9cf31d" style="margin: 10px;">
   <img width="400" alt="Individual Blog Post" src="https://github.com/user-attachments/assets/84a8a34a-49f7-4122-88e3-4aa663a98f3f" style="margin: 10px;">
+  <img src="https://github.com/user-attachments/assets/85d5ba37-75e3-4bb7-a4ef-a4c09c7effef" alt="MobileDemo" width="300"/>
 </div>
 
 **Perfect on every device** - Mobile-first design that looks stunning on phones, tablets, and desktops.
