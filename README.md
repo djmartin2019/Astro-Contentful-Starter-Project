@@ -11,15 +11,11 @@
 
 A **production-ready** blog starter template built with Astro and Contentful CMS. Features interactive multi-tag filtering, beautiful responsive design, and seamless Cloudflare Pages deployment.
 
-<!-- Replace this with your hero screenshot -->
-
-![Hero Screenshot](https://via.placeholder.com/800x400/2563eb/ffffff?text=Astro+Contentful+Starter+Demo)
+![Homepage](https://github.com/user-attachments/assets/a8321de4-3169-4e61-86a0-76a0395cc562)
 
 ## 🎯 **Live Demo & Performance**
 
-<!-- Replace this with your Lighthouse screenshot -->
-
-![Lighthouse Performance](https://via.placeholder.com/400x300/00c851/ffffff?text=Lighthouse+Score+95%2B)
+<!-- Add your Lighthouse screenshot here when available -->
 
 **🚀 Live Demo**: [View the live site](https://your-demo-url.pages.dev)  
 **⚡ Performance**: 95+ Lighthouse scores across all metrics  
@@ -52,10 +48,9 @@ A **production-ready** blog starter template built with Astro and Contentful CMS
 
 ## 📱 **Responsive Design**
 
-<!-- Replace these with your mobile/desktop screenshots -->
 <div align="center">
-  <img src="https://via.placeholder.com/300x600/2563eb/ffffff?text=Mobile+View" alt="Mobile View" width="200" style="margin: 10px;">
-  <img src="https://via.placeholder.com/600x400/2563eb/ffffff?text=Desktop+View" alt="Desktop View" width="400" style="margin: 10px;">
+  <img width="400" alt="Blog Page" src="https://github.com/user-attachments/assets/b9fa0c69-2c5e-453f-a8dd-7973dc9cf31d" style="margin: 10px;">
+  <img width="400" alt="Individual Blog Post" src="https://github.com/user-attachments/assets/84a8a34a-49f7-4122-88e3-4aa663a98f3f" style="margin: 10px;">
 </div>
 
 **Perfect on every device** - Mobile-first design that looks stunning on phones, tablets, and desktops.
@@ -163,9 +158,7 @@ npm run contentful:seed
 
 ### Multi-Tag Filtering System
 
-<!-- Replace this with your filtering GIF -->
-
-![Interactive Tag Filtering](https://via.placeholder.com/600x400/2563eb/ffffff?text=Interactive+Tag+Filtering+GIF)
+![BlogDemo-Astro](https://github.com/user-attachments/assets/9f3e177d-ff4c-417d-b532-14c127da8682)
 
 **Try it yourself**: [Live Demo](https://your-demo-url.pages.dev/blog)
 
