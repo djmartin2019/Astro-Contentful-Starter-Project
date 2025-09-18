@@ -153,17 +153,17 @@ try {
                     {post.fields.excerpt}
                   </p>
                 )}
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <a 
                     href={`/blog/${post?.fields?.slug}`}
-                    class="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                    class="text-primary-600 hover:text-primary-700 font-medium transition-colors self-start"
                   >
                     Read more →
                   </a>
                   {post?.fields?.tags && post.fields.tags.length > 0 && (
-                    <div class="flex gap-2">
+                    <div class="flex flex-wrap gap-1">
                       {post.fields.tags.slice(0, 2).map((tag: string) => (
-                        <span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
+                        <span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full whitespace-nowrap">
                           {tag}
                         </span>
                       ))}

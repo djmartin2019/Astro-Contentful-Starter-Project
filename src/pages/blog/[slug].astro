@@ -94,8 +94,9 @@ try {
     <section class="py-16">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Post Meta -->
-        <div class="flex items-center justify-between text-sm text-gray-500 mb-8 pb-4 border-b">
-          <div class="flex items-center space-x-4">
+        <div class="mb-8 pb-4 border-b">
+          <!-- Author and Date -->
+          <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
             {post?.fields?.author && (
               <span class="flex items-center">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,10 +115,11 @@ try {
             )}
           </div>
           
+          <!-- Tags -->
           {post?.fields?.tags && post.fields.tags.length > 0 && (
-            <div class="flex space-x-2">
+            <div class="flex flex-wrap gap-2">
               {post.fields.tags.map((tag: string) => (
-                <span class="px-3 py-1 bg-primary-100 text-primary-800 text-xs rounded-full">
+                <span class="px-3 py-1 bg-primary-100 text-primary-800 text-xs rounded-full whitespace-nowrap">
                   {tag}
                 </span>
               ))}
