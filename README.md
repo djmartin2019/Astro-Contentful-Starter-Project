@@ -49,7 +49,7 @@ A **production-ready** blog starter template built with Astro and Contentful CMS
 ## 📱 **Responsive Design**
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/85d5ba37-75e3-4bb7-a4ef-a4c09c7effef" alt="Responsive Design Showcase" width="75%"/>
+  <img src="https://github.com/user-attachments/assets/85d5ba37-75e3-4bb7-a4ef-a4c09c7effef" alt="Responsive Design Showcase" width="50%"/>
 </div>
 
 ### 🎯 **Mobile-First Approach**
