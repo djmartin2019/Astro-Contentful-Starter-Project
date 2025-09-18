@@ -65,12 +65,46 @@ const {
     <!-- Web App Manifest -->
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Fonts -->
+    <!-- Fonts with display=swap for better performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    
+    <!-- Resource hints for better performance -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
 
     <title>{title}</title>
+    
+    <!-- Critical CSS for above-the-fold content -->
+    <style>
+      /* Critical CSS for immediate rendering */
+      * { box-sizing: border-box; }
+      body { 
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif; 
+        margin: 0; 
+        padding: 0;
+        background-color: #f9fafb;
+        color: #111827;
+        line-height: 1.6;
+      }
+      .bg-gradient-to-br { background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); }
+      .text-primary-200 { color: #dbeafe; }
+      .min-h-full { min-height: 100vh; }
+      .flex { display: flex; }
+      .flex-col { flex-direction: column; }
+      .text-center { text-align: center; }
+      .text-white { color: white; }
+      .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+      .max-w-7xl { max-width: 80rem; }
+      .mx-auto { margin-left: auto; margin-right: auto; }
+      .px-4 { padding-left: 1rem; padding-right: 1rem; }
+      .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+      .font-bold { font-weight: 700; }
+      .mb-6 { margin-bottom: 1.5rem; }
+      .h-full { height: 100%; }
+      .antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    </style>
   </head>
   <body class="h-full bg-gray-50 text-gray-900 antialiased">
     <div class="min-h-full flex flex-col">
