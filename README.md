@@ -4,7 +4,7 @@
 [![Release](https://img.shields.io/github/v/release/djmartin2019/Astro-Contentful-Starter-Project)](https://github.com/djmartin2019/Astro-Contentful-Starter-Project/releases)
 [![Stars](https://img.shields.io/github/stars/djmartin2019/Astro-Contentful-Starter-Project?style=social)](https://github.com/djmartin2019/Astro-Contentful-Starter-Project/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Demo](https://img.shields.io/badge/Live%20Demo-blue?logo=cloudflare)](https://your-demo-url.pages.dev)
+[![Demo](https://img.shields.io/badge/Live%20Demo-blue?logo=cloudflare)](https://astro-contentful-starter-project.pages.dev/)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)](https://github.com/djmartin2019/Astro-Contentful-Starter-Project/actions)
 
 > **💡 Business Value**: Save 20+ hours of development time with this production-ready template that delivers enterprise-grade performance and SEO optimization for small businesses and developers.
@@ -17,7 +17,7 @@ A **production-ready** blog starter template built with Astro and Contentful CMS
 
 <!-- Add your Lighthouse screenshot here when available -->
 
-**🚀 Live Demo**: [View the live site](https://your-demo-url.pages.dev)  
+**🚀 Live Demo**: [View the live site](https://astro-contentful-starter-project.pages.dev/)  
 **⚡ Performance**: 95+ Lighthouse scores across all metrics  
 **🌍 Global CDN**: Deployed on Cloudflare Pages for maximum speed
 
@@ -166,7 +166,7 @@ npm run contentful:seed
 
 ![BlogDemo-Astro](https://github.com/user-attachments/assets/9f3e177d-ff4c-417d-b532-14c127da8682)
 
-**Try it yourself**: [Live Demo](https://your-demo-url.pages.dev/blog)
+**Try it yourself**: [Live Demo](https://astro-contentful-starter-project.pages.dev/)
 
 - **Click any tag** to filter posts instantly
 - **Select multiple tags** to find posts matching any of them
