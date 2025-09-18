@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getBlogPosts, getAssetUrl } from '../../lib/contentful';
+import { generateBreadcrumbStructuredData } from '../../lib/seo';
 import type { BlogPost } from '../../types/contentful';
 
 export async function getStaticPaths() {
@@ -40,6 +41,21 @@ const seoTitle = post.fields.title;
 const seoDescription = post.fields.excerpt || `Read ${post.fields.title}`;
 const featuredImage = featuredImageResolved ? getAssetUrl(featuredImageResolved, 1200, 630) : undefined;
 
+// Calculate reading time and word count (placeholder - in real implementation, parse rich text)
+const wordCount = Math.max(300, Math.floor((post.fields.excerpt?.length || 0) * 2.5));
+const readingTime = Math.max(1, Math.ceil(wordCount / 200)); // 200 words per minute
+
+// Get category from tags (use first tag as category)
+const category = post.fields.tags?.[0] || 'General';
+
+// Generate breadcrumb structured data
+const breadcrumbItems = [
+  { name: 'Home', url: Astro.url.origin },
+  { name: 'Blog', url: `${Astro.url.origin}/blog` },
+  { name: post.fields.title, url: Astro.url.href }
+];
+const breadcrumbStructuredData = generateBreadcrumbStructuredData(breadcrumbItems);
+
 // Get related posts
 let relatedPosts: BlogPost[] = [];
 try {
@@ -61,8 +77,48 @@ try {
   title={seoTitle}
   description={seoDescription}
   image={featuredImage}
+  type="article"
+  publishedTime={post.fields.publishDate}
+  modifiedTime={post.sys.updatedAt || post.fields.publishDate}
+  author={post.fields.author}
+  tags={post.fields.tags}
+  readingTime={readingTime}
+  wordCount={wordCount}
+  category={category}
 >
+  <!-- Breadcrumb Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbStructuredData)} />
+
   <article class="bg-white">
+    <!-- Breadcrumb Navigation -->
+    <nav class="bg-gray-50 border-b border-gray-200" aria-label="Breadcrumb">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <ol class="flex items-center space-x-2 text-sm">
+          <li>
+            <a href="/" class="text-gray-500 hover:text-gray-700 transition-colors">Home</a>
+          </li>
+          <li>
+            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+          </li>
+          <li>
+            <a href="/blog" class="text-gray-500 hover:text-gray-700 transition-colors">Blog</a>
+          </li>
+          <li>
+            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+            </svg>
+          </li>
+          <li>
+            <span class="text-gray-900 font-medium" aria-current="page">
+              {post.fields.title}
+            </span>
+          </li>
+        </ol>
+      </div>
+    </nav>
+
     <!-- Blog Post Header -->
     <section class="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-16">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -95,7 +151,7 @@ try {
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Post Meta -->
         <div class="mb-8 pb-4 border-b">
-          <!-- Author and Date -->
+          <!-- Author, Date, and Reading Time -->
           <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
             {post?.fields?.author && (
               <span class="flex items-center">
@@ -113,6 +169,18 @@ try {
                 {new Date(post.fields.publishDate).toLocaleDateString()}
               </span>
             )}
+            <span class="flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {readingTime} min read
+            </span>
+            <span class="flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {wordCount} words
+            </span>
           </div>
           
           <!-- Tags -->

@@ -130,6 +130,9 @@ try {
           class="w-full h-48 object-cover"
           loading="lazy"
           decoding="async"
+          width="800"
+          height="450"
+          fetchpriority="low"
         />
       </div>
     )}
@@ -280,7 +283,7 @@ try {
       this.filterPosts();
     }
 
-    toggleTag(tag) {
+    toggleTag(tag: string) {
       if (tag === 'all') {
         this.toggleAll();
         return;
@@ -306,11 +309,11 @@ try {
 
       // Update individual tag buttons
       this.tagButtons.forEach((button) => {
-        const tag = button.dataset.tag;
+        const tag = (button as HTMLElement).dataset.tag;
         if (this.selectedTags.has(tag)) {
-          button.className = 'px-4 py-2 rounded-full text-sm font-medium transition-colors bg-primary-600 text-white';
+          (button as HTMLElement).className = 'px-4 py-2 rounded-full text-sm font-medium transition-colors bg-primary-600 text-white';
         } else {
-          button.className = 'px-4 py-2 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200';
+          (button as HTMLElement).className = 'px-4 py-2 rounded-full text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200';
         }
       });
     }
@@ -319,31 +322,31 @@ try {
       let visibleCount = 0;
 
       this.postItems.forEach((post) => {
-        const postTags = post.dataset.tags.split(',').filter(tag => tag.trim() !== '');
+        const postTags = (post as HTMLElement).dataset.tags?.split(',').filter((tag: string) => tag.trim() !== '') || [];
         
         if (this.selectedTags.size === 0) {
           // Show all posts
-          post.style.display = 'block';
-          post.style.opacity = '1';
-          post.style.transform = 'scale(1)';
+          (post as HTMLElement).style.display = 'block';
+          (post as HTMLElement).style.opacity = '1';
+          (post as HTMLElement).style.transform = 'scale(1)';
           visibleCount++;
         } else {
           // Check if post has any of the selected tags
-          const hasSelectedTag = Array.from(this.selectedTags).some(selectedTag => 
+          const hasSelectedTag = Array.from(this.selectedTags).some((selectedTag: string) => 
             postTags.includes(selectedTag)
           );
           
           if (hasSelectedTag) {
-            post.style.display = 'block';
-            post.style.opacity = '1';
-            post.style.transform = 'scale(1)';
+            (post as HTMLElement).style.display = 'block';
+            (post as HTMLElement).style.opacity = '1';
+            (post as HTMLElement).style.transform = 'scale(1)';
             visibleCount++;
           } else {
             // Fade out and scale down before hiding
-            post.style.opacity = '0';
-            post.style.transform = 'scale(0.95)';
+            (post as HTMLElement).style.opacity = '0';
+            (post as HTMLElement).style.transform = 'scale(0.95)';
             setTimeout(() => {
-              post.style.display = 'none';
+              (post as HTMLElement).style.display = 'none';
             }, 300);
           }
         }
@@ -352,13 +355,13 @@ try {
       // Update results count
       if (this.resultsCount) {
         if (this.selectedTags.size === 0) {
-          this.resultsCount.textContent = `Showing all posts (${visibleCount} total)`;
+          (this.resultsCount as HTMLElement).textContent = `Showing all posts (${visibleCount} total)`;
         } else {
           const selectedTagsArray = Array.from(this.selectedTags);
           const tagsText = selectedTagsArray.length === 1 
             ? `"${selectedTagsArray[0]}"` 
             : `"${selectedTagsArray.join('", "')}"`;
-          this.resultsCount.textContent = `Showing posts tagged with ${tagsText} (${visibleCount} total)`;
+          (this.resultsCount as HTMLElement).textContent = `Showing posts tagged with ${tagsText} (${visibleCount} total)`;
         }
       }
 
